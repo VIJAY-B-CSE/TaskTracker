@@ -1,0 +1,17 @@
+/.metadata/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Zip files
+*.zip
+
+# Node modules
+frontend/**/node_modules/
+
+# React build
+frontend/**/dist/
