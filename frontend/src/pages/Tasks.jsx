@@ -445,7 +445,7 @@ const Tasks = () => {
                             <div className="btn-group" role="group">
                               {task.status !== 'DONE' && (
                                 <button
-                                  className="btn btn-sm btn-success"
+                                  className="btn btn-sm btn-outline-success"
                                   title="Mark as Done"
                                   onClick={() => handleMarkDone(task)}
                                 >
