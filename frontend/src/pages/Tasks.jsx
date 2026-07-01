@@ -18,15 +18,42 @@ const Tasks = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Pagination & Filtering & Sorting State
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isFirstPage, setIsFirstPage] = useState(true);
+  const [isLastPage, setIsLastPage] = useState(true);
+  const pageSize = 5; // 5 tasks per page is easy to paginate
+
   // Fetch all tasks and projects
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch tasks. Our GET /api/tasks returns a Page object, so we get elements from "content"
-      const tasksRes = await api.get('/tasks');
-      setTasks(tasksRes.data.content || []);
+      // Build query parameters for pageable request
+      const params = {
+        page: currentPage,
+        size: pageSize,
+        sort: `dueDate,${sortDirection}`
+      };
 
-      // 2. Fetch projects so we can populate the Project Selection dropdown
+      if (filterStatus) {
+        params.status = filterStatus;
+      }
+      if (filterPriority) {
+        params.priority = filterPriority;
+      }
+
+      // 1. Fetch tasks Page response
+      const tasksRes = await api.get('/tasks', { params });
+      setTasks(tasksRes.data.content || []);
+      setTotalPages(tasksRes.data.totalPages || 0);
+      setIsFirstPage(tasksRes.data.first);
+      setIsLastPage(tasksRes.data.last);
+
+      // 2. Fetch projects for dropdown selection
       const projectsRes = await api.get('/projects');
       setProjects(projectsRes.data || []);
     } catch (err) {
@@ -38,7 +65,7 @@ const Tasks = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage, filterStatus, filterPriority, sortDirection]);
 
   const handleError = (err) => {
     if (err.response && err.response.data && err.response.data.message) {
@@ -51,7 +78,6 @@ const Tasks = () => {
     setSuccess('');
   };
 
-  // Helper to show success message temporarily
   const showSuccess = (msg) => {
     setSuccess(msg);
     setTimeout(() => {
@@ -59,23 +85,38 @@ const Tasks = () => {
     }, 3000);
   };
 
-  // Date formatter (e.g. "2026-07-10" -> "10 Jul 2026")
+  // Helper to format date: e.g. "2026-07-10" -> "10 Jul 2026"
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // Fallback if invalid
+    if (isNaN(date.getTime())) return dateString;
 
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
     return date.toLocaleDateString('en-GB', options);
   };
 
-  // Submit task create or update
+  // Filter change handlers (resets current page index back to 0)
+  const handleStatusFilterChange = (e) => {
+    setFilterStatus(e.target.value);
+    setCurrentPage(0);
+  };
+
+  const handlePriorityFilterChange = (e) => {
+    setFilterPriority(e.target.value);
+    setCurrentPage(0);
+  };
+
+  const handleSortChange = (e) => {
+    setSortDirection(e.target.value);
+    setCurrentPage(0);
+  };
+
+  // Submit task form (save/update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Construct backend payload (project is an object referencing ID)
     const taskData = {
       title,
       description,
@@ -89,17 +130,15 @@ const Tasks = () => {
 
     try {
       if (editingId) {
-        // PUT update
         await api.put(`/tasks/${editingId}`, taskData);
         showSuccess('✔ Task updated successfully');
         setEditingId(null);
       } else {
-        // POST create
         await api.post('/tasks', taskData);
         showSuccess('✔ Task saved successfully');
       }
 
-      // Reset form
+      // Reset form fields
       setTitle('');
       setDescription('');
       setStatus('TODO');
@@ -113,7 +152,7 @@ const Tasks = () => {
     }
   };
 
-  // Mark status as DONE quickly
+  // Mark task status as DONE directly
   const handleMarkDone = async (task) => {
     setError('');
     setSuccess('');
@@ -189,7 +228,7 @@ const Tasks = () => {
       {success && <div className="alert alert-success shadow-sm">{success}</div>}
 
       <div className="row">
-        {/* Task Form */}
+        {/* Task Form Card */}
         <div className="col-md-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-header bg-dark text-white fw-bold">
@@ -292,13 +331,61 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* Tasks List Table */}
+        {/* Tasks List Card */}
         <div className="col-md-8">
           <div className="card shadow-sm">
             <div className="card-header bg-dark text-white fw-bold">
               Task List
             </div>
+            
             <div className="card-body p-0">
+              {/* Filter and Sort Toolbar */}
+              <div className="p-3 bg-light border-bottom">
+                <div className="row g-2">
+                  <div className="col-md-4">
+                    <label htmlFor="filterStatus" className="form-label small fw-bold text-muted mb-1">Status Filter</label>
+                    <select
+                      id="filterStatus"
+                      className="form-select form-select-sm"
+                      value={filterStatus}
+                      onChange={handleStatusFilterChange}
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="TODO">TODO</option>
+                      <option value="DOING">DOING</option>
+                      <option value="DONE">DONE</option>
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label htmlFor="filterPriority" className="form-label small fw-bold text-muted mb-1">Priority Filter</label>
+                    <select
+                      id="filterPriority"
+                      className="form-select form-select-sm"
+                      value={filterPriority}
+                      onChange={handlePriorityFilterChange}
+                    >
+                      <option value="">All Priorities</option>
+                      <option value="LOW">LOW</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HIGH">HIGH</option>
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label htmlFor="sortDueDate" className="form-label small fw-bold text-muted mb-1">Sort by Due Date</label>
+                    <select
+                      id="sortDueDate"
+                      className="form-select form-select-sm"
+                      value={sortDirection}
+                      onChange={handleSortChange}
+                    >
+                      <option value="asc">Ascending (Oldest First)</option>
+                      <option value="desc">Descending (Newest First)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Task Table */}
               <div className="table-responsive">
                 <table className="table table-hover table-striped mb-0">
                   <thead className="table-light">
@@ -322,7 +409,7 @@ const Tasks = () => {
                     ) : tasks.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="text-center text-muted p-4">
-                          No tasks available. Create your first task.
+                          No tasks found.
                         </td>
                       </tr>
                     ) : (
@@ -385,6 +472,28 @@ const Tasks = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Footer */}
+              <div className="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={isFirstPage || loading}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                >
+                  &laquo; Previous
+                </button>
+                <span className="text-muted fw-bold">
+                  Page {totalPages > 0 ? currentPage + 1 : 0} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={isLastPage || loading}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                >
+                  Next &raquo;
+                </button>
+              </div>
+              
             </div>
           </div>
         </div>
