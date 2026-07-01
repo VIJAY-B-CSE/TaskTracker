@@ -4,6 +4,8 @@ import com.vijay.tasktracker.entity.Task;
 import com.vijay.tasktracker.exception.ResourceNotFoundException;
 import com.vijay.tasktracker.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +18,10 @@ public class TaskService {
 
     public List<Task> getAllTasks() {
         return taskRepo.findAll();
+    }
+
+    public Page<Task> getTasks(String status, String priority, Pageable pageable) {
+        return taskRepo.findByStatusAndPriority(status, priority, pageable);
     }
 
     public Task getTaskById(Long id) {

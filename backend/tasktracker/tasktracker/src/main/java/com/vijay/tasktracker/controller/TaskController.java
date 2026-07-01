@@ -3,6 +3,10 @@ package com.vijay.tasktracker.controller;
 import com.vijay.tasktracker.entity.Task;
 import com.vijay.tasktracker.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +24,12 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        List<Task> tasks = taskService.getAllTasks();
+    public ResponseEntity<Page<Task>> getAllTasks(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @PageableDefault(size = 10, sort = "dueDate", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        Page<Task> tasks = taskService.getTasks(status, priority, pageable);
         return ResponseEntity.ok(tasks);
     }
 
