@@ -179,22 +179,23 @@ const Projects = () => {
                   <thead className="table-light">
                     <tr>
                       <th style={{ width: '10%' }}>ID</th>
-                      <th style={{ width: '25%' }}>Name</th>
-                      <th style={{ width: '40%' }}>Description</th>
+                      <th style={{ width: '20%' }}>Name</th>
+                      <th style={{ width: '35%' }}>Description</th>
+                      <th style={{ width: '10%' }} className="text-center">Tasks</th>
                       <th style={{ width: '25%' }} className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan="4" className="text-center text-primary p-4">
+                        <td colSpan="5" className="text-center text-primary p-4">
                           <div className="spinner-border spinner-border-sm me-2" role="status"></div>
                           Loading projects...
                         </td>
                       </tr>
                     ) : projects.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="text-center text-muted p-4">
+                        <td colSpan="5" className="text-center text-muted p-4">
                           No projects available. Create your first project.
                         </td>
                       </tr>
@@ -204,6 +205,11 @@ const Projects = () => {
                           <td>{project.id}</td>
                           <td className="fw-bold">{project.name}</td>
                           <td className="text-muted">{project.description}</td>
+                          <td className="text-center">
+                            <span className="badge rounded-pill bg-secondary">
+                              {project.tasks ? project.tasks.length : 0}
+                            </span>
+                          </td>
                           <td className="text-center">
                             <button
                               className="btn btn-sm btn-outline-warning me-2"
