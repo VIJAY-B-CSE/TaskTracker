@@ -1,6 +1,7 @@
 package com.vijay.tasktracker.service;
 
 import com.vijay.tasktracker.entity.Project;
+import com.vijay.tasktracker.exception.ResourceNotFoundException;
 import com.vijay.tasktracker.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,9 @@ public class ProjectService {
         return projectRepo.findAll();
     }
 
-    public Optional<Project> getProjectById(Long id) {
-        return projectRepo.findById(id);
+    public Project getProjectById(Long id) {
+        return projectRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
     }
 
     public Project saveProject(Project project) {
@@ -27,7 +29,7 @@ public class ProjectService {
 
     public Project updateProject(Long id, Project projectDetails) {
         Project existingProject = projectRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
 
         existingProject.setName(projectDetails.getName());
         existingProject.setDescription(projectDetails.getDescription());
@@ -35,6 +37,8 @@ public class ProjectService {
     }
 
     public void deleteProject(Long id) {
-        projectRepo.deleteById(id);
+        Project existingProject = projectRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
+        projectRepo.delete(existingProject);
     }
 }

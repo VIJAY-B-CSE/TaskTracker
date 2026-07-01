@@ -2,6 +2,7 @@ package com.vijay.tasktracker.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 @Entity
@@ -13,8 +14,10 @@ public class Project {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Name cannot be blank")
     private String name;
 
+    @NotBlank(message = "Description cannot be blank")
     private String description;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -22,14 +25,6 @@ public class Project {
     private List<Task> tasks;
 
     public Project() {
-    }
-
-    // All-arguments Constructor
-    public Project(Long id, String name, String description, List<Task> tasks) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.tasks = tasks;
     }
 
     // Getters and Setters

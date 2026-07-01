@@ -2,7 +2,7 @@ package com.vijay.tasktracker.controller;
 
 import com.vijay.tasktracker.entity.Project;
 import com.vijay.tasktracker.service.ProjectService;
-
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,19 +29,18 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
-        return projectService.getProjectById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Project project = projectService.getProjectById(id);
+        return ResponseEntity.ok(project);
     }
 
     @PostMapping
-    public ResponseEntity<Project> createProject(@RequestBody Project project) {
+    public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
         Project savedProject = projectService.saveProject(project);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProject);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(@PathVariable Long id, @RequestBody Project projectDetails) {
+    public ResponseEntity<Project> updateProject(@PathVariable Long id, @Valid @RequestBody Project projectDetails) {
         Project updatedProject = projectService.updateProject(id, projectDetails);
         return ResponseEntity.ok(updatedProject);
     }

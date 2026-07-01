@@ -2,6 +2,8 @@ package com.vijay.tasktracker.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
@@ -16,15 +18,20 @@ public class Task {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Title cannot be blank")
     private String title;
 
+    @NotBlank(message = "Description cannot be blank")
     private String description;
 
+    @NotNull(message = "Status cannot be null")
     private String status;
 
+    @NotNull(message = "Priority cannot be null")
     private String priority;
 
     @Column(name = "due_date")
+    @NotNull(message = "Due date cannot be null")
     private LocalDate dueDate;
 
     @CreationTimestamp
@@ -41,20 +48,6 @@ public class Task {
     private Project project;
 
     public Task() {
-    }
-
-    // All-arguments Constructor
-    public Task(Long id, String title, String description, String status, String priority,
-            LocalDate dueDate, LocalDateTime createdAt, LocalDateTime updatedAt, Project project) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.status = status;
-        this.priority = priority;
-        this.dueDate = dueDate;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.project = project;
     }
 
     // Getters and Setters

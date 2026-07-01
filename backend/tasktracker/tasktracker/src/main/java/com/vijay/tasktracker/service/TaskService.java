@@ -1,6 +1,7 @@
 package com.vijay.tasktracker.service;
 
 import com.vijay.tasktracker.entity.Task;
+import com.vijay.tasktracker.exception.ResourceNotFoundException;
 import com.vijay.tasktracker.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,9 @@ public class TaskService {
         return taskRepo.findAll();
     }
 
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepo.findById(id);
+    public Task getTaskById(Long id) {
+        return taskRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
     }
 
     public Task saveTask(Task task) {
@@ -27,7 +29,7 @@ public class TaskService {
 
     public Task updateTask(Long id, Task taskDetails) {
         Task existingTask = taskRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 
         existingTask.setTitle(taskDetails.getTitle());
         existingTask.setDescription(taskDetails.getDescription());
@@ -39,6 +41,8 @@ public class TaskService {
     }
 
     public void deleteTask(Long id) {
-        taskRepo.deleteById(id);
+        Task existingTask = taskRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        taskRepo.delete(existingTask);
     }
 }
