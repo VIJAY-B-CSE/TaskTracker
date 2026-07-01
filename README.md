@@ -122,7 +122,7 @@ Hibernate will automatically create or update all required tables based on the e
 2. Run the integration tests to verify compile settings and database endpoints:
    ```bash
    # Windows
-   mvnw clean test
+   .\mvnw clean test
 
    # Linux/macOS
    ./mvnw clean test
@@ -130,7 +130,7 @@ Hibernate will automatically create or update all required tables based on the e
 3. Run the Spring Boot application:
    ```bash
    # Windows
-   mvnw spring-boot:run
+   .\mvnw spring-boot:run
 
    # Linux/macOS
    ./mvnw spring-boot:run
